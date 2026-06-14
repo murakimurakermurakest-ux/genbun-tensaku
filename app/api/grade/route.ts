@@ -16,7 +16,7 @@ function fallbackEssayGrade(answer: string, q: typeof questions[number]) {
   const lengthOk = q.maxChars ? length <= q.maxChars : true;
   const score = Math.max(1, Math.min(5, Math.round(ratio * 4 + (lengthOk ? 1 : 0))));
 
-  return `【簡易添削モード】\n\n【模範解答】\n${q.modelAnswer}\n\n【点数】\n${score} / 5点\n\n【採点基準】\n${hitTerms.length ? '○' : '△'} 模範解答に近い重要語句を含めて説明している\n${lengthOk ? '○' : '×'} 字数条件を守っている${q.maxChars ? `（${length}/${q.maxChars}字）` : ''}\n△ 理由や内容のつながりが明確かどうかは、AI接続後により詳しく判定します\n\n【解説】\n現在はOpenAI APIキー未設定のため、簡易判定で表示しています。AI接続後は、模範解答をもとに採点基準を作成し、○△×と5点満点で詳しく添削します。`;
+  return `【簡易添削モード】\n\n【模範解答】\n${q.modelAnswer}\n\n【点数】\n${score} / 5点\n\n【採点基準】\n${hitTerms.length ? '○' : '△'} 模範解答に近い重要語句を含めて説明している\n${lengthOk ? '○' : '×'} 字数条件を守っている${q.maxChars ? `（${length}/${q.maxChars}字）` : ''}\n△ 理由や内容のつながりが明確かどうかは、AI接続後により詳しく判定します\n\n【解説】\n現在はGemini APIキー未設定、またはAI接続に失敗したため、簡易判定で表示しています。AI接続後は、模範解答をもとに採点基準を作成し、○△×と5点満点で詳しく添削します。`;
 }
 
 function gradeChoice(studentAnswer: string, q: typeof questions[number]) {
@@ -93,10 +93,9 @@ ${q.modelAnswer}
 ×：満たしていない
 
 【解説】
-生徒答案の良い点と改善点を、100〜180字程度で具体的に説明する。
+生徒答案の良い点と改善点を、100〜180字程度で具体的に説明してください。
 
 最後に次の注意書きをそのまま表示してください。
-
 ※この添削はAIによる参考評価です。最終的な理解は、授業・教科書・配布資料で確認してください。
 `;
 
@@ -130,7 +129,6 @@ ${q.modelAnswer}
   }
 
   const geminiData = await geminiRes.json();
-  console.log(geminiData);
   const result = geminiData?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text ?? '').join('') || '添削結果を取得できませんでした。';
 
   return Response.json({ result, mode: 'gemini' });
