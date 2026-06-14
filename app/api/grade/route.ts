@@ -70,7 +70,8 @@ ${q.maxChars ? `${q.maxChars}字以内` : '指定なし'}
 【生徒答案】
 ${studentAnswer}
 
-次の形式を必ず守ってください。
+次の4項目を必ずすべて出力してください。
+【模範解答】【点数】【採点基準】【解説】の見出しを省略してはいけません。
 
 【模範解答】
 ${q.modelAnswer}
@@ -103,7 +104,7 @@ ${q.modelAnswer}
         ],
         generationConfig: {
           temperature: 0.2,
-          maxOutputTokens: 1200,
+          maxOutputTokens: 4096,
         },
       }),
     }
