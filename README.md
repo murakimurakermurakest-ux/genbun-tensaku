@@ -10,7 +10,7 @@
 ## 問題形式
 
 - 選択問題：正誤・正答・解説を表示
-- 記述問題：OpenAI APIキーがあればAI添削、未設定なら簡易添削
+- 記述問題：Gemini APIキーがあればAI添削、未設定なら簡易添削
 - 抜き出し問題：今後追加予定
 
 ## 記述問題のAI添削結果
@@ -20,12 +20,12 @@
 - 採点基準（○△×）
 - 解説
 
-## OpenAI APIキー
+## Gemini APIキー
 
 Vercel の Environment Variables に次を登録するとAI添削が有効になります。
 
 ```env
-OPENAI_API_KEY=sk-...
+GEMINI_API_KEY=sk-...
 ```
 
 未設定でも選択問題と簡易添削は動きます。

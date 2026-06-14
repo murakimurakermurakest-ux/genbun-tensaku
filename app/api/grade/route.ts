@@ -1,4 +1,3 @@
-import OpenAI from 'openai';
 import { questions } from '@/lib/questionBank';
 
 function normalizeJapanese(value: string) {
@@ -48,11 +47,10 @@ export async function POST(req: Request) {
     return Response.json({ result: gradeExtract(studentAnswer, q), mode: 'extract' });
   }
 
-  if (!process.env.OPENAI_API_KEY) {
+  if (!process.env.GEMINI_API_KEY) {
     return Response.json({ result: fallbackEssayGrade(studentAnswer, q), mode: 'fallback' });
   }
 
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const prompt = `
 あなたは高校現代文の教師です。生徒の記述答案を添削してください。
 このアプリは自学支援用です。断定しすぎず、学習者が次に何を直せばよいかが分かるように説明してください。
@@ -91,13 +89,37 @@ ${q.modelAnswer}
 生徒答案の良い点と改善点を、100〜180字程度で具体的に説明する。
 `;
 
-  const completion = await client.chat.completions.create({
-    model: 'gpt-4.1-mini',
-    messages: [
-      { role: 'system', content: 'あなたは高校国語の記述添削に特化した教師です。' },
-      { role: 'user', content: prompt },
-    ],
-  });
+  const geminiRes = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: prompt }],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 1200,
+        },
+      }),
+    }
+  );
 
-  return Response.json({ result: completion.choices[0]?.message?.content ?? '添削結果を取得できませんでした。', mode: 'ai' });
+  if (!geminiRes.ok) {
+    const errorText = await geminiRes.text();
+    console.error('Gemini API error:', errorText);
+    return Response.json(
+      { result: fallbackEssayGrade(studentAnswer, q), mode: 'fallback', warning: 'Gemini APIの呼び出しに失敗したため、簡易添削で表示しました。' },
+      { status: 200 }
+    );
+  }
+
+  const geminiData = await geminiRes.json();
+  const result = geminiData?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text ?? '').join('') || '添削結果を取得できませんでした。';
+
+  return Response.json({ result, mode: 'gemini' });
 }
