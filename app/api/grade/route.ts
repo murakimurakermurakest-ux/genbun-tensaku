@@ -119,6 +119,7 @@ ${q.modelAnswer}
   }
 
   const geminiData = await geminiRes.json();
+  console.log(geminiData);
   const result = geminiData?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text ?? '').join('') || '添削結果を取得できませんでした。';
 
   return Response.json({ result, mode: 'gemini' });
